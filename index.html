@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>K1 Slip Generator</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Editor Panel -->
+        <section class="editor-panel">
+            <div class="panel-header">
+                <h2>Slip Details Editor</h2>
+                <button id="download-btn" class="btn-primary">Download PDF</button>
+            </div>
+            
+            <div class="form-container">
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label>Slip ID</label>
+                        <input type="text" id="slip-id" value="INV-2026-001">
+                    </div>
+                    <div class="form-group">
+                        <label>Slip Date</label>
+                        <input type="text" id="slip-date" value="2026-05-09">
+                    </div>
+                    <div class="form-group">
+                        <label>Order Date</label>
+                        <input type="text" id="order-date" value="2026-05-01">
+                    </div>
+                    <div class="form-group">
+                        <label>Delivered Date</label>
+                        <input type="text" id="delivered-date" value="2026-05-09">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Bill To (Name & Address)</label>
+                    <select id="customer-select" style="margin-bottom: 0.5rem; background: var(--bg-primary); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 4px; padding: 0.6rem; width: 100%;">
+                        <option value="">-- Select Existing Customer --</option>
+                    </select>
+                    <textarea id="bill-to" rows="4">John Doe
+123 Main Street
+Apt 4B
+New York, NY 10001
+USA</textarea>
+                </div>
+
+                <div class="items-section">
+                    <h3>Items</h3>
+                    <div id="items-list">
+                        <!-- Items will be injected here -->
+                    </div>
+                    <button id="add-item" class="btn-secondary">+ Add Item</button>
+                    
+                    <datalist id="item-options">
+                        <option value="Logo Design">
+                        <option value="Social Media Kit">
+                        <option value="Social Media post">
+                        <option value="YouTube video">
+                        <option value="Web Development">
+                    </datalist>
+
+                    <datalist id="type-options">
+                        <option value="JPG">
+                        <option value="PNG">
+                        <option value="PSD">
+                        <option value="MP4">
+                        <option value="AI">
+                        <option value="PDF">
+                    </datalist>
+                </div>
+
+                <div class="form-group">
+                    <label>Discount Amount (Rs.)</label>
+                    <input type="number" id="discount-input" value="0.00" min="0" step="0.01">
+                </div>
+
+                <div class="form-group">
+                    <label>Payment Status</label>
+                    <select id="payment-status">
+                        <option value="pending">Pending</option>
+                        <option value="paid">Paid</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Notes</label>
+                    <textarea id="notes" rows="3">Please process payment within 14 days.</textarea>
+                </div>
+            </div>
+        </section>
+
+        <!-- Preview Panel -->
+        <section class="preview-panel">
+            <div id="slip-template" class="slip-paper">
+                <div class="watermark-text-bg">K1 BUILDS</div>
+                
+                <div id="rubber-stamp" class="rubber-stamp stamp-pending">PAYMENT PENDING</div>
+                
+                <!-- Black Header Bar -->
+                <div class="header-black-bar">
+                    <div class="header-left">
+                        <div class="header-brand-text">
+                            <h2>K1" <span>BUILDS'</span></h2>
+                            <p>MOVE WITH US</p>
+                        </div>
+                    </div>
+                    <div class="header-right">
+                        <div id="prev-slip-id" class="mono-text">{slip-ID}</div>
+                        <div id="prev-slip-date" class="mono-text">{slip-date}</div>
+                    </div>
+                </div>
+
+                <!-- Content Area -->
+                <div class="slip-content">
+                    <div class="top-info-row">
+                        <div class="company-address mono-text">
+                            <h3>K1 BUILDS</h3>
+                            <p>NO -17,<br>sucharithagama,<br>anuradhapura,<br>50000</p>
+                        </div>
+                        <div class="order-details mono-text">
+                            <p id="prev-pkg-id">{Package id}</p>
+                            <p id="prev-order-date">{Order Date}</p>
+                            <p id="prev-del-date">{Delevered date}</p>
+                        </div>
+                    </div>
+
+                    <div class="middle-info-row">
+                        <div class="bill-to-section mono-text">
+                            <p class="bill-to-label">Bill to:</p>
+                            <div id="prev-bill-to" class="bill-to-address">
+                                {name of customer}<br>
+                                {address line 01}<br>
+                                {address line 02}
+                            </div>
+                        </div>
+                        <div class="bank-details mono-text">
+                            <p class="bank-title">Bank Details</p>
+                            <p>8021659610</p>
+                            <p>Kekirawa</p>
+                            <p>A.D.Suraweera</p>
+                            <p>Commercial Bank | Sri Lanka</p>
+                        </div>
+                    </div>
+
+                    <table class="slip-table mono-text">
+                        <thead>
+                            <tr>
+                                <th style="text-align: left; width: 45%;">Item Description</th>
+                                <th>type</th>
+                                <th>Qty</th>
+                                <th>Price</th>
+                            </tr>
+                        </thead>
+                        <tbody id="prev-items">
+                            <!-- Rows -->
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="2" class="total-label">TOTAL</td>
+                                <td id="prev-total-qty" class="text-center">{qty}</td>
+                                <td id="prev-total-price" class="text-center">{price}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+
+                    <div class="bottom-info-row">
+                        <div class="bottom-left">
+                            <div class="price-breakdown mono-text">
+                                <div class="price-line subtotal-line" id="subtotal-container">Subtotal - Rs.<span id="prev-subtotal">{subtotal}</span></div>
+                                <div class="price-line discount-line" id="discount-container">Discount - Rs.<span id="prev-discount">0.00</span></div>
+                                <div class="price-line final-price">Total - Rs.<span id="prev-final-price">{total price}</span></div>
+                            </div>
+                            <div class="notes-row mono-text">
+                                <span class="notes-label">Notes:</span> <span id="prev-notes">{text box}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="footer-thanks mono-text">
+                        <p>Thank <span id="prev-thank-name">{customer-neme}</span> for purchasing our service</p>
+                        <div class="footer-contact">
+                            <span>Contact Us - 0704233686</span>
+                            <span>|</span>
+                            <span>Facebook - KONE BUILDS</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script type="module" src="script.js"></script>
+</body>
+</html>

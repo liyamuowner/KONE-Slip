@@ -1,0 +1,5 @@
+node_modules/
+.DS_Store
+Slip_Records.xlsx
+.gemini/
+scratch/
