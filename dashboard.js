@@ -84,14 +84,34 @@ function renderRecords(slips) {
 
 function showDetails(slip) {
     currentSlip = slip;
-    const itemsHtml = slip.items ? slip.items.map(item => `
-        <tr>
-            <td>${item.description}</td>
-            <td>${item.type}</td>
-            <td>${item.qty}</td>
-            <td>Rs.${parseFloat(item.price).toLocaleString()}</td>
-        </tr>
-    `).join('') : '<tr><td colspan="4" style="text-align:center">No items found</td></tr>';
+    
+    let itemsHtml = '';
+    
+    // Check if the new 'items' array exists and has content
+    if (slip.items && slip.items.length > 0) {
+        itemsHtml = slip.items.map(item => `
+            <tr>
+                <td>${item.description || '-'}</td>
+                <td>${item.type || '-'}</td>
+                <td>${item.qty || '1'}</td>
+                <td>Rs.${parseFloat(item.price || 0).toLocaleString()}</td>
+            </tr>
+        `).join('');
+    } 
+    // Fallback: Check for legacy root-level fields (for old records)
+    else if (slip.description || slip.price) {
+        itemsHtml = `
+            <tr>
+                <td>${slip.description || 'General Service'}</td>
+                <td>${slip.type || '-'}</td>
+                <td>${slip.qty || '1'}</td>
+                <td>Rs.${parseFloat(slip.price || 0).toLocaleString()}</td>
+            </tr>
+        `;
+    } 
+    else {
+        itemsHtml = '<tr><td colspan="4" style="text-align:center">No items found</td></tr>';
+    }
 
     modalBody.innerHTML = `
         <div class="modal-body-header">
