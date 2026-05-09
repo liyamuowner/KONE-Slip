@@ -21,6 +21,12 @@ const modalBody = document.getElementById('modal-body');
 const closeModal = document.querySelector('.close-modal');
 const printModalBtn = document.getElementById('print-modal-btn');
 
+const recordsList = document.getElementById('records-list');
+const loading = document.getElementById('loading');
+const table = document.getElementById('records-table');
+const searchInput = document.getElementById('search-input');
+
+let allSlips = [];
 let currentSlip = null;
 
 async function fetchRecords() {
