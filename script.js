@@ -143,18 +143,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Payment Status Logic
     paymentStatus.addEventListener('change', () => {
+        const paidNote = 'Payment received successfully! \nThank you for choosing <b>K1 BUILDS</b>.';
+        const pendingNote = 'Please process payment within 14 days.';
+        
         if (paymentStatus.value === 'paid') {
             rubberStamp.className = 'rubber-stamp stamp-paid';
             rubberStamp.textContent = 'PAID';
-            if (notes.value.includes('Please process payment within 14 days.')) {
-                notes.value = '\nPayment received successfully! \nThank you for choosing <b>K1 BUILDS</b>.';
+            // Auto-update note if it's currently the default pending note
+            if (notes.value.trim() === pendingNote) {
+                notes.value = paidNote;
                 prevNotes.innerHTML = notes.value.replace(/\n/g, '<br>');
             }
         } else {
             rubberStamp.className = 'rubber-stamp stamp-pending';
             rubberStamp.textContent = 'PAYMENT PENDING';
-            if (notes.value.includes('Payment received with thanks.')) {
-                notes.value = 'Please process payment within 14 days.';
+            // Auto-update note if it's currently the default paid note
+            if (notes.value.trim() === paidNote.trim()) {
+                notes.value = pendingNote;
                 prevNotes.innerHTML = notes.value.replace(/\n/g, '<br>');
             }
         }
