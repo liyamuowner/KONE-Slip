@@ -47,6 +47,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const prevNotes = document.getElementById('prev-notes');
     const prevThankName = document.getElementById('prev-thank-name');
 
+    // Auto-update dates to today
+    const today = new Date().toISOString().split('T')[0];
+    slipDate.value = today;
+    orderDate.value = today;
+    delDate.value = today;
+
     // Simple Updates
     const updateText = (input, preview, fallback = '') => {
         input.addEventListener('input', () => {
