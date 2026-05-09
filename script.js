@@ -223,12 +223,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 createdAt: new Date().toISOString()
             });
             console.log("Slip saved to Firestore successfully.");
-        } catch (error) {
-            console.error("Error saving to Firestore:", error);
-        }
+            
+            // Direct PDF Download
+            const element = document.querySelector('.slip-paper');
+            const opt = {
+                margin:       0,
+                filename:     `${slipData.slipId}.pdf`,
+                image:        { type: 'jpeg', quality: 1.0 },
+                html2canvas:  { scale: 3, useCORS: true, letterRendering: true },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            
+            // Using a small delay to ensure rendering is complete
+            setTimeout(() => {
+                html2pdf().from(element).set(opt).save();
+            }, 500);
 
-        // Generate PDF natively (perfect CSS rendering)
-        window.print();
+        } catch (error) {
+            console.error("Error in download process:", error);
+            alert("Error generating PDF. Please check connection.");
+        }
     });
 
     // Fetch Next Slip ID from Firestore
