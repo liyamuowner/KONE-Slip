@@ -1,6 +1,7 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
+import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -16,6 +17,7 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
+const db = getFirestore(app);
 
 document.addEventListener('DOMContentLoaded', () => {
     // Inputs
@@ -207,38 +209,46 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         try {
-            const response = await fetch('http://localhost:3001/save-slip', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(slipData)
+            // Save to Firestore
+            await addDoc(collection(db, "slips"), {
+                ...slipData,
+                createdAt: new Date().toISOString()
             });
-
-            if (!response.ok) {
-                console.error("Failed to save to Excel.");
-            }
+            console.log("Slip saved to Firestore successfully.");
         } catch (error) {
-            console.error("Server is not running. Could not save to Excel:", error);
+            console.error("Error saving to Firestore:", error);
         }
 
         // Generate PDF natively (perfect CSS rendering)
         window.print();
     });
 
-    // Fetch Next Slip ID
+    // Fetch Next Slip ID from Firestore
     async function fetchNextSlipId() {
         try {
-            const response = await fetch('http://localhost:3001/get-next-slip-id');
-            if (response.ok) {
-                const data = await response.json();
-                if (data.nextId) {
-                    slipId.value = data.nextId;
-                    slipId.dispatchEvent(new Event('input'));
+            const q = query(collection(db, "slips"), orderBy("createdAt", "desc"), limit(1));
+            const querySnapshot = await getDocs(q);
+            
+            if (!querySnapshot.empty) {
+                const lastSlip = querySnapshot.docs[0].data();
+                const lastId = lastSlip.slipId;
+                
+                if (lastId && lastId.includes('-')) {
+                    const parts = lastId.split('-');
+                    const numPart = parseInt(parts[parts.length - 1]);
+                    if (!isNaN(numPart)) {
+                        const nextNum = numPart + 1;
+                        parts[parts.length - 1] = nextNum.toString().padStart(3, '0');
+                        slipId.value = parts.join('-');
+                        slipId.dispatchEvent(new Event('input'));
+                        return;
+                    }
                 }
             }
+            slipId.value = 'INV-2026-001';
+            slipId.dispatchEvent(new Event('input'));
         } catch (error) {
-            console.error("Could not fetch next Slip ID:", error);
+            console.error("Could not fetch next Slip ID from Firestore:", error);
         }
     }
 
@@ -248,21 +258,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function fetchCustomers() {
         try {
-            const response = await fetch('http://localhost:3001/get-customers');
-            if (response.ok) {
-                const data = await response.json();
-                if (data.customers && data.customers.length > 0) {
-                    customersData = data.customers;
-                    data.customers.forEach(cust => {
-                        const option = document.createElement('option');
-                        option.value = cust.name;
-                        option.textContent = cust.name;
-                        customerSelect.appendChild(option);
-                    });
+            const querySnapshot = await getDocs(collection(db, "slips"));
+            const customersMap = new Map();
+            
+            querySnapshot.forEach(doc => {
+                const data = doc.data();
+                if (data.clientName && data.billToAddress && !customersMap.has(data.clientName)) {
+                    customersMap.set(data.clientName, data.billToAddress);
                 }
-            }
+            });
+
+            customersData = Array.from(customersMap.entries()).map(([name, address]) => ({
+                name, address
+            }));
+
+            customerSelect.innerHTML = '<option value="">-- Select Existing Customer --</option>';
+            customersData.forEach(cust => {
+                const option = document.createElement('option');
+                option.value = cust.name;
+                option.textContent = cust.name;
+                customerSelect.appendChild(option);
+            });
         } catch (error) {
-            console.error("Could not fetch customers:", error);
+            console.error("Could not fetch customers from Firestore:", error);
         }
     }
 
