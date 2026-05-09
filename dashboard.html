@@ -73,17 +73,69 @@
     <div class="dashboard-container">
         <header class="dashboard-header">
             <div>
-                <h1 style="font-size: 1.5rem; margin-bottom: 0.5rem;">K1 Slip Records</h1>
-                <p style="color: var(--text-secondary); font-size: 0.9rem;">View and manage all generated slips stored in Firebase.</p>
+                <h1 style="font-size: 2rem; font-weight: 800; background: linear-gradient(135deg, #00f2fe, #4facfe); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 0.5rem; letter-spacing: -0.5px;">K1 Slip Records</h1>
+                <p style="color: var(--text-muted); font-size: 0.95rem;">Cloud-synced database for high-performance management.</p>
             </div>
             <div class="header-actions">
-                <input type="text" id="search-input" class="search-bar" placeholder="Search by Client or ID...">
-                <a href="index.html" class="btn-primary" style="text-decoration: none;">+ New Slip</a>
+                <input type="text" id="search-input" class="search-bar" placeholder="Quick search..." style="width: 250px;">
+                <a href="index.html" class="btn-primary" style="text-decoration: none; padding: 0.8rem 1.5rem;">+ Create New</a>
             </div>
         </header>
 
-        <div id="loading" class="loading-spinner">Loading records from Firestore...</div>
+        <div id="loading" class="loading-spinner">
+            <div style="margin-bottom: 1rem;">Fetching encrypted records...</div>
+            <div style="width: 40px; height: 40px; border: 3px solid var(--primary); border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto;"></div>
+        </div>
         
+        <style>
+            @keyframes spin { to { transform: rotate(360deg); } }
+            .dashboard-container {
+                max-width: 1300px;
+                margin: 4rem auto;
+                background: var(--glass-bg);
+                backdrop-filter: blur(20px);
+                border-radius: 32px;
+                padding: 3.5rem;
+                border: 1px solid var(--glass-border);
+                box-shadow: var(--shadow-premium);
+                animation: slideIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            }
+            @keyframes slideIn { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+            
+            .records-table {
+                width: 100%;
+                border-collapse: separate;
+                border-spacing: 0 0.75rem;
+                margin-top: 2rem;
+            }
+            .records-table th {
+                padding: 1rem 1.5rem;
+                font-size: 0.75rem;
+                text-transform: uppercase;
+                letter-spacing: 1.5px;
+                color: var(--text-muted);
+                border: none;
+            }
+            .records-table tbody tr {
+                background: rgba(255, 255, 255, 0.02);
+                transition: var(--transition);
+                border-radius: 12px;
+            }
+            .records-table tbody tr td {
+                padding: 1.25rem 1.5rem;
+                border-top: 1px solid rgba(255, 255, 255, 0.03);
+                border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            }
+            .records-table tbody tr td:first-child { border-left: 1px solid rgba(255, 255, 255, 0.03); border-radius: 12px 0 0 12px; }
+            .records-table tbody tr td:last-child { border-right: 1px solid rgba(255, 255, 255, 0.03); border-radius: 0 12px 12px 0; }
+            
+            .records-table tbody tr:hover {
+                background: rgba(255, 255, 255, 0.06);
+                transform: scale(1.01) translateY(-2px);
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            }
+        </style>
+
         <div class="table-wrapper" style="overflow-x: auto;">
             <table class="records-table" id="records-table" style="display: none;">
                 <thead>
@@ -97,7 +149,7 @@
                     </tr>
                 </thead>
                 <tbody id="records-list">
-                    <!-- Data will be injected here -->
+                    <!-- Data injected by dashboard.js -->
                 </tbody>
             </table>
         </div>
