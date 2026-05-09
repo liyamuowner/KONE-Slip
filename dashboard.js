@@ -25,12 +25,20 @@ let currentSlip = null;
 
 async function fetchRecords() {
     try {
-        const q = query(collection(db, "slips"), orderBy("createdAt", "desc"));
+        const q = query(collection(db, "slips"));
         const querySnapshot = await getDocs(q);
         
         allSlips = [];
         querySnapshot.forEach(doc => {
-            allSlips.push({ id: doc.id, ...doc.data() });
+            const data = doc.data();
+            allSlips.push({ id: doc.id, ...data });
+        });
+
+        // Sort manually by createdAt if it exists, otherwise use orderDate or slipDate
+        allSlips.sort((a, b) => {
+            const dateA = a.createdAt || a.slipDate || '';
+            const dateB = b.createdAt || b.slipDate || '';
+            return dateB.localeCompare(dateA);
         });
 
         renderRecords(allSlips);
@@ -48,8 +56,9 @@ function renderRecords(slips) {
         const tr = document.createElement('tr');
         const statusClass = slip.status === 'paid' ? 'status-paid' : 'status-pending';
         
+        const slipDateDisplay = slip.createdAt ? new Date(slip.createdAt).toLocaleDateString() : (slip.slipDate || 'No Date');
         tr.innerHTML = `
-            <td class="mono-text">${new Date(slip.createdAt).toLocaleDateString()}</td>
+            <td class="mono-text">${slipDateDisplay}</td>
             <td class="mono-text" style="color: var(--primary); font-weight: 600;">${slip.slipId}</td>
             <td>
                 <div style="font-weight: 500;">${slip.clientName}</div>
