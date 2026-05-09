@@ -193,14 +193,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Download PDF natively and save to Excel
     downloadBtn.addEventListener('click', async () => {
+        const items = Array.from(itemsList.querySelectorAll('.item-row')).map(row => ({
+            description: row.querySelector('.item-desc').value,
+            type: row.querySelector('.item-type').value,
+            qty: row.querySelector('.item-qty').value,
+            price: row.querySelector('.item-price').value
+        }));
+
         const slipData = {
             slipId: slipId.value,
             slipDate: slipDate.value,
-            pkgId: slipId.value, // package ID is synced to slip ID
+            pkgId: slipId.value,
             orderDate: orderDate.value,
             delDate: delDate.value,
             clientName: billTo.value.split('\n')[0] || '',
             billToAddress: billTo.value,
+            items: items,
             subtotal: parseFloat(prevSubtotal.textContent) || 0,
             discount: parseFloat(prevDiscount ? prevDiscount.textContent : 0) || 0,
             total: parseFloat(prevFinalPrice.textContent) || 0,

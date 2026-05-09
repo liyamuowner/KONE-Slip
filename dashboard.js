@@ -16,12 +16,12 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-const recordsList = document.getElementById('records-list');
-const loading = document.getElementById('loading');
-const table = document.getElementById('records-table');
-const searchInput = document.getElementById('search-input');
+const modal = document.getElementById('details-modal');
+const modalBody = document.getElementById('modal-body');
+const closeModal = document.querySelector('.close-modal');
+const printModalBtn = document.getElementById('print-modal-btn');
 
-let allSlips = [];
+let currentSlip = null;
 
 async function fetchRecords() {
     try {
@@ -50,20 +50,106 @@ function renderRecords(slips) {
         
         tr.innerHTML = `
             <td class="mono-text">${new Date(slip.createdAt).toLocaleDateString()}</td>
-            <td class="mono-text" style="color: var(--accent-color); font-weight: 600;">${slip.slipId}</td>
+            <td class="mono-text" style="color: var(--primary); font-weight: 600;">${slip.slipId}</td>
             <td>
                 <div style="font-weight: 500;">${slip.clientName}</div>
-                <div style="font-size: 0.75rem; color: var(--text-secondary);">${slip.billToAddress.split('\n').slice(1).join(', ')}</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">${slip.billToAddress.split('\n').slice(1).join(', ')}</div>
             </td>
             <td class="mono-text">Rs.${slip.total.toLocaleString()}</td>
             <td><span class="status-badge ${statusClass}">${slip.status}</span></td>
             <td>
-                <button class="btn-secondary" style="padding: 0.3rem 0.6rem; font-size: 0.7rem;" onclick="alert('View Detail coming soon!')">Details</button>
+                <button class="btn-secondary detail-btn" style="padding: 0.3rem 0.8rem; font-size: 0.75rem;">Details</button>
             </td>
         `;
+        
+        tr.querySelector('.detail-btn').addEventListener('click', () => showDetails(slip));
         recordsList.appendChild(tr);
     });
 }
+
+function showDetails(slip) {
+    currentSlip = slip;
+    const itemsHtml = slip.items ? slip.items.map(item => `
+        <tr>
+            <td>${item.description}</td>
+            <td>${item.type}</td>
+            <td>${item.qty}</td>
+            <td>Rs.${parseFloat(item.price).toLocaleString()}</td>
+        </tr>
+    `).join('') : '<tr><td colspan="4" style="text-align:center">No items found</td></tr>';
+
+    modalBody.innerHTML = `
+        <div class="modal-body-header">
+            <div>
+                <h2 style="color: var(--primary); margin-bottom: 0.3rem;">Slip Details</h2>
+                <p class="mono-text" style="font-size: 0.9rem; color: var(--text-muted);">${slip.slipId}</p>
+            </div>
+            <div style="text-align: right">
+                <span class="status-badge ${slip.status === 'paid' ? 'status-paid' : 'status-pending'}">${slip.status}</span>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem;">${new Date(slip.createdAt).toLocaleString()}</p>
+            </div>
+        </div>
+
+        <div class="modal-detail-grid">
+            <div class="detail-item">
+                <label>Bill To</label>
+                <p style="white-space: pre-line;">${slip.billToAddress}</p>
+            </div>
+            <div class="detail-item">
+                <label>Dates</label>
+                <p>Order: ${slip.orderDate}</p>
+                <p>Delivery: ${slip.delDate}</p>
+                <p>Slip: ${slip.slipDate}</p>
+            </div>
+        </div>
+
+        <label style="display: block; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem; letter-spacing: 1px;">Items</label>
+        <table class="modal-items-table">
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th>Type</th>
+                    <th>Qty</th>
+                    <th>Price</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${itemsHtml}
+            </tbody>
+        </table>
+
+        <div class="modal-summary">
+            <div class="summary-row">
+                <span>Subtotal</span>
+                <span class="mono-text">Rs.${slip.subtotal.toLocaleString()}</span>
+            </div>
+            <div class="summary-row" style="color: #ef4444;">
+                <span>Discount</span>
+                <span class="mono-text">- Rs.${slip.discount.toLocaleString()}</span>
+            </div>
+            <div class="summary-row total">
+                <span>Total Amount</span>
+                <span class="mono-text">Rs.${slip.total.toLocaleString()}</span>
+            </div>
+        </div>
+
+        <div class="detail-item" style="margin-top: 2rem;">
+            <label>Notes</label>
+            <p style="color: var(--text-muted); font-style: italic;">"${slip.notes || 'No notes provided.'}"</p>
+        </div>
+    `;
+
+    modal.style.display = 'block';
+}
+
+closeModal.onclick = () => modal.style.display = 'none';
+window.onclick = (event) => { if (event.target == modal) modal.style.display = 'none'; };
+
+printModalBtn.onclick = () => {
+    // Redirect to index.html with the slip ID or data to re-populate?
+    // Or just alert for now.
+    alert('Printing from dashboard will be implemented soon. For now, please use the "New Slip" page to generate PDFs.');
+};
 
 searchInput.addEventListener('input', (e) => {
     const term = e.target.value.toLowerCase();
@@ -74,5 +160,4 @@ searchInput.addEventListener('input', (e) => {
     renderRecords(filtered);
 });
 
-// Initial fetch
 fetchRecords();
